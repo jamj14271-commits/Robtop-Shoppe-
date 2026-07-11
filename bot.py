@@ -1,14 +1,30 @@
 import discord
 from discord.ext import commands
 import os
+from flask import Flask
+from threading import Thread
 
-# Cấu hình intents để bot đọc được tin nhắn
+# Cấu hình intents
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# ID Kênh Admin duyệt bài (THAY ID CỦA BẠN VÀO ĐÂY)
-ADMIN_CHANNEL_ID = 1525386498739015800  
+# ID Kênh Admin (Đã cập nhật theo số bạn cung cấp)
+ADMIN_CHANNEL_ID = 1525386498739015800
 
+# Thiết lập Flask để giữ bot không bị ngủ
+app = Flask('')
+@app.route('/')
+def home():
+    return "Bot vẫn đang chạy!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# Quy tắc MP
 MP_RULES = {
     "easy": 5, "normal": 10, "hard": 25, "harder": 50, "insane": 100,
     "easy_demon": 250, "medium_demon": 500, "hard_demon": 1000, 
@@ -68,7 +84,7 @@ async def duyet(ctx, cap_do: str):
     await admin_channel.send(embed=embed, view=ReviewView(ctx.author, cap_do, MP_RULES[cap_do]))
     await ctx.send("✅ Đã gửi bài của bạn tới Admin duyệt!")
 
-# Chạy bot bằng Token từ biến môi trường của Render
+# Khởi động dịch vụ giữ bot sống và chạy bot
+keep_alive()
 token = os.environ.get('TOKEN')
 bot.run(token)
-
